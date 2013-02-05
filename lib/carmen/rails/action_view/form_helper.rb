@@ -22,10 +22,10 @@ module ActionView
       #   subregion_select(@object, :region, {priority: ['US', 'CA']}, class: 'region')
       #
       # Returns an `html_safe` string containing the HTML for a select element.
-      def subregion_select(object, method, parent_region_or_code, options={}, html_options={})
+      def subregion_select(object, object_name, method, parent_region_or_code, options={}, html_options={})
         parent_region = determine_parent(parent_region_or_code)
-        tag = InstanceTag.new(object, method, self, options.delete(:object))
-        tag.to_region_select_tag(parent_region, options, html_options)
+        tag = InstanceTag.new(object_name, method, self, options.delete(:object))
+        tag.to_region_select_tag(object, object_name, parent_region, options, html_options)
       end
 
       # Generate select and country option tags for the given object and method. A
@@ -51,7 +51,7 @@ module ActionView
       #   country_select(@object, :region, ['US', 'CA'], class: region)
       #
       # Returns an `html_safe` string containing the HTML for a select element.
-      def country_select(object, method, *args)
+      def country_select(object, object_name, method, *args)
 
         # These contortions are to provide API-compatibility
         priority_countries = args.shift if args.first.is_a?(Array)
@@ -62,8 +62,8 @@ module ActionView
 
         html_options ||= {}
 
-        tag = InstanceTag.new(object, method, self)
-        tag.to_region_select_tag(Carmen::World.instance, options, html_options)
+        tag = InstanceTag.new(object_name, method, self)
+        tag.to_region_select_tag(object, object_name, Carmen::World.instance, options, html_options)
       end
 
       # Generate option tags for a collection of regions.
@@ -173,7 +173,7 @@ module ActionView
     end
 
     class InstanceTag
-      def to_region_select_tag(parent_region, options = {}, html_options = {})
+      def to_region_select_tag(object, object_name, parent_region, options = {}, html_options = {})
         html_options = html_options.stringify_keys
         add_default_name_and_id(html_options)
         priority_regions = options[:priority] || []
@@ -190,7 +190,7 @@ module ActionView
       #
       # See `FormOptionsHelper::country_select` for more information.
       def country_select(method, *args)
-        @template.country_select(@object_name, method, *args)
+        @template.country_select(@object, @object_name, method, *args)
       end
 
       # Generate select and subregion option tags with the provided name. A
@@ -199,7 +199,7 @@ module ActionView
       #
       # See `FormOptionsHelper::subregion_select` for more information.
       def subregion_select(method, parent_region_or_code, *args)
-        @template.subregion_select(@object_name, method, parent_region_or_code, *args)
+        @template.subregion_select(@object, @object_name, method, parent_region_or_code, *args)
       end
     end
 
